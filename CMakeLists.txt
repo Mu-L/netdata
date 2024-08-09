@@ -2440,12 +2440,6 @@ install(PROGRAMS
         COMPONENT netdata
         DESTINATION usr/libexec/netdata)
 
-configure_file(system/cron/netdata-updater-daily.in system/cron/netdata-updater-daily @ONLY)
-install(FILES
-        ${CMAKE_BINARY_DIR}/system/cron/netdata-updater-daily
-        COMPONENT netdata
-        DESTINATION usr/lib/netdata/system/cron)
-
 configure_file(system/launchd/netdata.plist.in system/launchd/netdata.plist @ONLY)
 install(FILES
         ${CMAKE_BINARY_DIR}/system/launchd/netdata.plist
@@ -2521,28 +2515,10 @@ install(FILES
         COMPONENT netdata
         DESTINATION usr/lib/netdata/system/systemd)
 
-configure_file(system/systemd/netdata-updater.service.in system/systemd/netdata-updater.service @ONLY)
-install(FILES
-        ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
-        COMPONENT netdata
-        DESTINATION usr/lib/netdata/system/systemd)
-
-install(FILES
-        system/systemd/netdata-updater.timer
-        COMPONENT netdata
-        DESTINATION usr/lib/netdata/system/systemd)
 
 if(BUILD_FOR_PACKAGING)
         install(FILES
                 ${CMAKE_BINARY_DIR}/system/systemd/netdata.service
-                COMPONENT netdata
-                DESTINATION lib/systemd/system)
-        install(FILES
-                ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
-                COMPONENT netdata
-                DESTINATION lib/systemd/system)
-        install(FILES
-                system/systemd/netdata-updater.timer
                 COMPONENT netdata
                 DESTINATION lib/systemd/system)
         install(DIRECTORY
@@ -2581,12 +2557,6 @@ else()
         set(NETDATA_CONF_DEST "usr/lib/netdata/conf.d")
 endif()
 
-install(FILES
-        system/netdata.conf
-        system/netdata-updater.conf
-        COMPONENT netdata
-        DESTINATION ${NETDATA_CONF_DEST})
-
 #
 # misc files
 #
@@ -2602,10 +2572,50 @@ if(BUILD_FOR_PACKAGING)
                 DESTINATION etc/init.d)
 endif()
 
-install(PROGRAMS
-        packaging/installer/netdata-updater.sh
-        COMPONENT netdata
-        DESTINATION usr/libexec/netdata)
+if(NOT OS_WINDOWS)
+  install(PROGRAMS
+          packaging/installer/netdata-updater.sh
+          COMPONENT netdata
+          DESTINATION usr/libexec/netdata)
+
+  install(FILES
+          system/netdata.conf
+          system/netdata-updater.conf
+          COMPONENT netdata
+          DESTINATION ${NETDATA_CONF_DEST})
+
+  configure_file(system/cron/netdata-updater-daily.in
+                 system/cron/netdata-updater-daily
+                 @ONLY)
+  install(FILES
+          ${CMAKE_BINARY_DIR}/system/cron/netdata-updater-daily
+          COMPONENT netdata
+          DESTINATION usr/lib/netdata/system/cron)
+
+  configure_file(system/systemd/netdata-updater.service.in
+                 system/systemd/netdata-updater.service
+                 @ONLY)
+  install(FILES
+          ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
+          COMPONENT netdata
+          DESTINATION usr/lib/netdata/system/systemd)
+
+  install(FILES
+          system/systemd/netdata-updater.timer
+          COMPONENT netdata
+          DESTINATION usr/lib/netdata/system/systemd)
+
+  if(BUILD_FOR_PACKAGING)
+    install(FILES
+            ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
+            COMPONENT netdata
+            DESTINATION lib/systemd/system)
+    install(FILES
+            system/systemd/netdata-updater.timer
+            COMPONENT netdata
+            DESTINATION lib/systemd/system)
+  endif()
+endif()
 
 #
 # TODO: check the following files for correct substitutions
@@ -2765,17 +2775,14 @@ install(FILES src/collectors/python.d.plugin/python.d.conf
         DESTINATION usr/lib/netdata/conf.d)
 
 install(FILES
-        src/collectors/python.d.plugin/alarms/alarms.conf
         src/collectors/python.d.plugin/am2320/am2320.conf
         src/collectors/python.d.plugin/anomalies/anomalies.conf
-        src/collectors/python.d.plugin/beanstalk/beanstalk.conf
         src/collectors/python.d.plugin/boinc/boinc.conf
         src/collectors/python.d.plugin/ceph/ceph.conf
         src/collectors/python.d.plugin/changefinder/changefinder.conf
         src/collectors/python.d.plugin/dovecot/dovecot.conf
         src/collectors/python.d.plugin/example/example.conf
         src/collectors/python.d.plugin/exim/exim.conf
-        src/collectors/python.d.plugin/gearman/gearman.conf
         src/collectors/python.d.plugin/go_expvar/go_expvar.conf
         src/collectors/python.d.plugin/haproxy/haproxy.conf
         src/collectors/python.d.plugin/monit/monit.conf
@@ -2784,12 +2791,10 @@ install(FILES
         src/collectors/python.d.plugin/openldap/openldap.conf
         src/collectors/python.d.plugin/oracledb/oracledb.conf
         src/collectors/python.d.plugin/pandas/pandas.conf
-        src/collectors/python.d.plugin/rethinkdbs/rethinkdbs.conf
         src/collectors/python.d.plugin/retroshare/retroshare.conf
         src/collectors/python.d.plugin/riakkv/riakkv.conf
         src/collectors/python.d.plugin/samba/samba.conf
         src/collectors/python.d.plugin/spigotmc/spigotmc.conf
-        src/collectors/python.d.plugin/squid/squid.conf
         src/collectors/python.d.plugin/tor/tor.conf
         src/collectors/python.d.plugin/traefik/traefik.conf
         src/collectors/python.d.plugin/uwsgi/uwsgi.conf
@@ -2800,17 +2805,14 @@ install(FILES
         DESTINATION usr/lib/netdata/conf.d/python.d)
 
 install(FILES
-        src/collectors/python.d.plugin/alarms/alarms.chart.py
         src/collectors/python.d.plugin/am2320/am2320.chart.py
         src/collectors/python.d.plugin/anomalies/anomalies.chart.py
-        src/collectors/python.d.plugin/beanstalk/beanstalk.chart.py
         src/collectors/python.d.plugin/boinc/boinc.chart.py
         src/collectors/python.d.plugin/ceph/ceph.chart.py
         src/collectors/python.d.plugin/changefinder/changefinder.chart.py
         src/collectors/python.d.plugin/dovecot/dovecot.chart.py
         src/collectors/python.d.plugin/example/example.chart.py
         src/collectors/python.d.plugin/exim/exim.chart.py
-        src/collectors/python.d.plugin/gearman/gearman.chart.py
         src/collectors/python.d.plugin/go_expvar/go_expvar.chart.py
         src/collectors/python.d.plugin/haproxy/haproxy.chart.py
         src/collectors/python.d.plugin/monit/monit.chart.py
@@ -2819,12 +2821,10 @@ install(FILES
         src/collectors/python.d.plugin/openldap/openldap.chart.py
         src/collectors/python.d.plugin/oracledb/oracledb.chart.py
         src/collectors/python.d.plugin/pandas/pandas.chart.py
-        src/collectors/python.d.plugin/rethinkdbs/rethinkdbs.chart.py
         src/collectors/python.d.plugin/retroshare/retroshare.chart.py
         src/collectors/python.d.plugin/riakkv/riakkv.chart.py
         src/collectors/python.d.plugin/samba/samba.chart.py
         src/collectors/python.d.plugin/spigotmc/spigotmc.chart.py
-        src/collectors/python.d.plugin/squid/squid.chart.py
         src/collectors/python.d.plugin/tor/tor.chart.py
         src/collectors/python.d.plugin/traefik/traefik.chart.py
         src/collectors/python.d.plugin/uwsgi/uwsgi.chart.py
